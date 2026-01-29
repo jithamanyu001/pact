@@ -1,0 +1,9 @@
+torch
+numpy
+transformers
+wandb
+datasets
+tqdm
+peft
+accelerate
+pyyaml
