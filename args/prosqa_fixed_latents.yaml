@@ -1,0 +1,45 @@
+# need 4 gpus
+
+project: pact
+save_path: YOUR_PATH_TO_SAVE_THE_MODEL
+name: prosqa-fixed-latents
+
+only_eval: False
+
+pact: True
+cot: False
+no_thoughts: False
+no_cot: False
+
+c_thought: 1
+num_context_tokens: 2
+projection_rank: 128
+codebook_heads: 4
+epochs_per_stage: 5
+max_latent_stage: 6
+pad_latent_to_max: True
+fixed_latents: True
+
+# LoRA Configuration
+use_lora: False
+lora_r: 128
+lora_alpha: 256
+lora_dropout: 0.0
+lora_target_modules: ["c_attn", "c_proj", "c_fc", "wte", "lm_head"] # GPT-2 specific modules.
+
+save_only_improve: False
+uniform_prob: 0.0
+model_id: openai-community/gpt2
+load_model_path: None
+seed: 0
+resume: 0
+bf16: False
+train_path: data/prosqa_train.json
+val_path: data/prosqa_valid.json
+reset_optimizer: True
+batch_size_training: 32
+debug: False
+gradient_accumulation_steps: 1
+num_epochs: 50
+lr: !!float "1e-4"
+weight_decay: 0.01

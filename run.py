@@ -213,13 +213,17 @@ def main():
             projection_rank=getattr(configs, "projection_rank", 128),
             num_attention_heads=getattr(configs, "codebook_heads", 4),
             num_context_tokens=getattr(configs, "num_context_tokens", 1),
+            use_fixed_latents=getattr(configs, "fixed_latents", False),
+            max_latent_stage=getattr(configs, "max_latent_stage", 1),
         )
-        
-        # Ensure Codebook (queries) and Cross Attention are trainable
-        # Since we froze the base model for LoRA, we need to make sure these new components are trainable
-        model.latent_queries.requires_grad = True
-        for param in model.cross_attn.parameters():
-            param.requires_grad = True
+
+        # Ensure PaCT-specific parameters are trainable
+        if getattr(configs, "fixed_latents", False):
+            model.fixed_latent_embeddings.requires_grad = True
+        else:
+            model.latent_queries.requires_grad = True
+            for param in model.cross_attn.parameters():
+                param.requires_grad = True
 
     if configs.load_model_path is not None and configs.load_model_path != "None" and not loaded:
         # When loading a checkpoint into the Coconut wrapper, we expect keys to match.

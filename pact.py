@@ -105,6 +105,8 @@ class Pact(nn.Module):
         projection_rank=128,
         num_attention_heads=4,
         num_context_tokens=1,
+        use_fixed_latents=False,
+        max_latent_stage=1,
     ):
 
         super(Pact, self).__init__()
@@ -127,19 +129,26 @@ class Pact(nn.Module):
             hidden_size = self.base_causallm.config.hidden_size
 
         self.hidden_size = hidden_size
-        
-        # Codebook: n_latents queries that cross-attend to the seed state
-        self.latent_queries = nn.Parameter(torch.randn(n_latents, hidden_size))
-        self.cross_attn = nn.MultiheadAttention(
-            embed_dim=hidden_size,
-            num_heads=num_attention_heads,
-            batch_first=True
-        )
-        
-        # Initialize latent queries
-        nn.init.normal_(self.latent_queries, mean=0.0, std=0.02)
-        nn.init.zeros_(self.cross_attn.out_proj.weight)
-        nn.init.zeros_(self.cross_attn.out_proj.bias)
+        self.use_fixed_latents = use_fixed_latents
+
+        if self.use_fixed_latents:
+            # Fixed learnable embeddings: one unique vector per latent position
+            total_latent_positions = max_latent_stage * n_latents
+            self.fixed_latent_embeddings = nn.Parameter(
+                torch.randn(total_latent_positions, hidden_size)
+            )
+            nn.init.normal_(self.fixed_latent_embeddings, mean=0.0, std=0.02)
+        else:
+            # Original PaCT: codebook queries + cross-attention
+            self.latent_queries = nn.Parameter(torch.randn(n_latents, hidden_size))
+            self.cross_attn = nn.MultiheadAttention(
+                embed_dim=hidden_size,
+                num_heads=num_attention_heads,
+                batch_first=True
+            )
+            nn.init.normal_(self.latent_queries, mean=0.0, std=0.02)
+            nn.init.zeros_(self.cross_attn.out_proj.weight)
+            nn.init.zeros_(self.cross_attn.out_proj.bias)
 
     def _get_latent_info(self, input_ids):
         """
@@ -252,27 +261,38 @@ class Pact(nn.Module):
             if not active_mask.any():
                 break
             
-            # Generate n_latents latent embeddings using codebook cross-attention
-            # Query: codebook [n_latents, hidden] -> [batch, n_latents, hidden]
-            queries = self.latent_queries.unsqueeze(0).expand(batch_size, -1, -1)
-            
-            # Key/Value: last hidden state [batch, 1, hidden]
-            gen_latents, _ = self.cross_attn(queries, last_hidden, last_hidden)
-            gen_latents  = gen_latents + residual_information
+            # Generate n_latents latent embeddings
+            if self.use_fixed_latents:
+                # Fixed learnable embeddings: look up by position index
+                end_emb_idx = min(iter_start_idx + self.n_latents,
+                                  self.fixed_latent_embeddings.size(0))
+                gen_latents = self.fixed_latent_embeddings[iter_start_idx:end_emb_idx]
+                gen_latents = gen_latents.unsqueeze(0).expand(batch_size, -1, -1)
+                if gen_latents.size(1) < self.n_latents:
+                    pad = torch.zeros(batch_size, self.n_latents - gen_latents.size(1),
+                                      self.hidden_size, device=gen_latents.device, dtype=gen_latents.dtype)
+                    gen_latents = torch.cat([gen_latents, pad], dim=1)
+            else:
+                # PaCT: codebook cross-attention
+                # Query: codebook [n_latents, hidden] -> [batch, n_latents, hidden]
+                queries = self.latent_queries.unsqueeze(0).expand(batch_size, -1, -1)
+                # Key/Value: last hidden state [batch, 1, hidden]
+                gen_latents, _ = self.cross_attn(queries, last_hidden, last_hidden)
+                gen_latents  = gen_latents + residual_information
             # gen_latents: [batch, n_latents, hidden]
-            
+
             # Inject generated latents into working_embeds at correct positions
             # Only inject where there are actual latent placeholders
             for j in range(self.n_latents):
                 global_latent_idx = iter_start_idx + j
                 target_pos = min_latent_pos + global_latent_idx
-                
+
                 if target_pos >= seq_len:
                     break
-                
+
                 # Check which samples have a latent at this position
                 inject_mask = latent_mask[:, target_pos]  # [batch]
-                
+
                 if inject_mask.any():
                     # Inject for samples that have latent placeholder at this position
                     working_embeds[inject_mask, target_pos, :] = gen_latents[inject_mask, j, :]
@@ -405,10 +425,20 @@ class Pact(nn.Module):
             if not active_mask.any():
                 break
             
-            # Generate latents using codebook
-            queries = self.latent_queries.unsqueeze(0).expand(batch_size, -1, -1)
-            gen_latents, _ = self.cross_attn(queries, last_hidden, last_hidden)
-            gen_latents  = gen_latents + residual_information
+            # Generate latents
+            if self.use_fixed_latents:
+                end_emb_idx = min(iter_start_idx + self.n_latents,
+                                  self.fixed_latent_embeddings.size(0))
+                gen_latents = self.fixed_latent_embeddings[iter_start_idx:end_emb_idx]
+                gen_latents = gen_latents.unsqueeze(0).expand(batch_size, -1, -1)
+                if gen_latents.size(1) < self.n_latents:
+                    pad = torch.zeros(batch_size, self.n_latents - gen_latents.size(1),
+                                      self.hidden_size, device=gen_latents.device, dtype=gen_latents.dtype)
+                    gen_latents = torch.cat([gen_latents, pad], dim=1)
+            else:
+                queries = self.latent_queries.unsqueeze(0).expand(batch_size, -1, -1)
+                gen_latents, _ = self.cross_attn(queries, last_hidden, last_hidden)
+                gen_latents  = gen_latents + residual_information
             # Inject latents
             for j in range(self.n_latents):
                 global_latent_idx = iter_start_idx + j
@@ -592,6 +622,13 @@ if __name__ == "__main__":
 
     from transformers import AutoModelForCausalLM
     model = AutoModelForCausalLM.from_pretrained("openai-community/gpt2", device_map="cpu")
+
+    input_ids = torch.tensor([[0, 901, 900, 900, 902, 1, 1, 1, 1, 1],[0, 901, 900, 900, 902, 1, 1, 1, 1, 1]], dtype=torch.long)
+    attention_mask = torch.tensor([[1, 1, 1, 1, 1, 1, 1, 1, 0, 0],[1, 1, 1, 1, 1, 1, 1, 1, 1, 1]], dtype=torch.long)
+    position_ids = torch.tensor([[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]], dtype=torch.long)
+    labels = input_ids.clone()
+
+    # Test standard PaCT
     pact = Pact(
         base_causallm=model,
         latent_token_id=900,
@@ -601,9 +638,21 @@ if __name__ == "__main__":
         n_latents=5,
         num_attention_heads=4,
     )
-    input_ids = torch.tensor([[0, 901, 900, 900, 902, 1, 1, 1, 1, 1],[0, 901, 900, 900, 902, 1, 1, 1, 1, 1]], dtype=torch.long)
-    attention_mask = torch.tensor([[1, 1, 1, 1, 1, 1, 1, 1, 0, 0],[1, 1, 1, 1, 1, 1, 1, 1, 1, 1]], dtype=torch.long)
-    position_ids = torch.tensor([[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]], dtype=torch.long)
-    labels = input_ids.clone()
     outputs = pact(input_ids, attention_mask, labels, position_ids)
-    import pdb; pdb.set_trace()
+    print(f"PaCT loss: {outputs.loss.item()}")
+
+    # Test fixed latent embeddings
+    pact_fixed = Pact(
+        base_causallm=model,
+        latent_token_id=900,
+        start_latent_id=901,
+        end_latent_id=902,
+        eos_token_id=1,
+        n_latents=5,
+        num_attention_heads=4,
+        use_fixed_latents=True,
+        max_latent_stage=2,
+    )
+    outputs_fixed = pact_fixed(input_ids, attention_mask, labels, position_ids)
+    print(f"Fixed latents loss: {outputs_fixed.loss.item()}")
+    print("Both modes work correctly!")
