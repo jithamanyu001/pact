@@ -63,6 +63,12 @@ def main():
 
     configs = Config(config_dict)
     set_seed(configs.seed)
+
+    perturbation_mode = getattr(configs, "perturbation_mode", "none")
+    if rank == 0 and perturbation_mode != "none":
+        sigma = getattr(configs, "perturbation_noise_sigma", 0.0)
+        print(f"=== PERTURBATION ANALYSIS: mode={perturbation_mode}, sigma={sigma} ===")
+
     save_dir = os.path.join(configs.save_path, configs.name)
 
     if not os.path.exists(save_dir) and rank == 0:
@@ -213,6 +219,8 @@ def main():
             projection_rank=getattr(configs, "projection_rank", 128),
             num_attention_heads=getattr(configs, "codebook_heads", 4),
             num_context_tokens=getattr(configs, "num_context_tokens", 1),
+            perturbation_mode=getattr(configs, "perturbation_mode", "none"),
+            perturbation_noise_sigma=getattr(configs, "perturbation_noise_sigma", 0.0),
         )
         
         # Ensure Codebook (queries) and Cross Attention are trainable

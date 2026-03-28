@@ -1,0 +1,50 @@
+# Perturbation analysis: add Gaussian noise (sigma=1.0) to generated latents
+
+project: pact
+save_path: checkpoints/
+name: gsm-perturb-noise-1.0
+
+only_eval: True
+
+pact: True
+cot: False
+no_thoughts: False
+no_cot: False
+
+c_thought: 2
+num_context_tokens: 2
+projection_rank: 128
+codebook_heads: 4
+epochs_per_stage: 3
+max_latent_stage: 3
+pad_latent_to_max: True
+
+# Perturbation config
+perturbation_mode: noise
+perturbation_noise_sigma: 1.0
+
+# LoRA Configuration
+use_lora: False
+lora_r: 128
+lora_alpha: 256
+lora_dropout: 0.0
+lora_target_modules: ["c_attn", "c_proj", "c_fc", "wte", "lm_head"]
+
+save_only_improve: False
+save_model: False
+uniform_prob: 0.0
+model_id: openai-community/gpt2
+load_model_path: YOUR_PATH_TO_PACT_CHECKPOINT
+seed: 0
+resume: 15
+bf16: False
+train_path: data/gsm_train.json
+val_path: data/gsm_test.json
+reset_optimizer: True
+batch_size_training: 32
+debug: False
+gradient_accumulation_steps: 1
+num_epochs: 25
+eval_frequency: 1
+lr: !!float "1e-4"
+weight_decay: 0.01
