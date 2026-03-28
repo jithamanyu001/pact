@@ -105,6 +105,7 @@ class Pact(nn.Module):
         projection_rank=128,
         num_attention_heads=4,
         num_context_tokens=1,
+        latent_only_decode=False,
     ):
 
         super(Pact, self).__init__()
@@ -116,6 +117,7 @@ class Pact(nn.Module):
         self.end_latent_id = end_latent_id
         self.n_latents = n_latents  # c_thought: latents per iteration
         self.num_context_tokens = num_context_tokens
+        self.latent_only_decode = latent_only_decode
         
         assert self.num_context_tokens >= 0, "num_context_tokens must be greater than 0"
         # Tested with GPT2 and Llama3
@@ -348,12 +350,14 @@ class Pact(nn.Module):
     def _generate_latents_iteratively(self, input_ids, attention_mask, inputs_embeds, position_ids):
         """
         Generate latent embeddings iteratively using codebook, vectorized across batch.
-        
+
         Returns:
             working_embeds: embeddings with latents injected
             past_key_values: KV cache after processing all latents
             current_pos: position after all latents
             custom_attention_mask: the attention mask used
+            had_latents: bool
+            min_latent_pos: position of first latent token (or 0 if none)
         """
         batch_size, seq_len = input_ids.shape
         
@@ -374,7 +378,7 @@ class Pact(nn.Module):
         
         # If no latents, just return original embeddings
         if not has_latents.any():
-            return inputs_embeds, None, 0, custom_attention_mask, False
+            return inputs_embeds, None, 0, custom_attention_mask, False, 0
         
         # Determine number of iterations needed
         max_latent_count = latent_counts.max().item()
@@ -448,7 +452,7 @@ class Pact(nn.Module):
             current_pos = chunk_end
             self.gen_forward_cnt += 1
         
-        return working_embeds, past_key_values, current_pos, custom_attention_mask, True
+        return working_embeds, past_key_values, current_pos, custom_attention_mask, True, min_latent_pos
 
     def generate(
         self,
@@ -469,19 +473,64 @@ class Pact(nn.Module):
         self.gen_forward_cnt = 0
         batch_size, seq_len = input_ids.shape
         device = input_ids.device
-        
+
         # Get embeddings
         inputs_embeds = self.embedding(input_ids)
         position_ids = torch.arange(seq_len, device=device).unsqueeze(0).expand(batch_size, -1)
-        
+
         # Generate latents iteratively (vectorized)
-        working_embeds, past_key_values, current_pos, custom_attention_mask, had_latents = \
+        working_embeds, past_key_values, current_pos, custom_attention_mask, had_latents, min_latent_pos = \
             self._generate_latents_iteratively(input_ids, attention_mask, inputs_embeds, position_ids)
-        
-        # Process any remaining suffix after latents
-        if had_latents and current_pos < seq_len:
+
+        # --- Latent-only decoding ---
+        # Discard the KV cache built with question tokens and re-run only the
+        # latent region (<start-latent> + latents + <end-latent>) so that
+        # answer decoding has NO access to the original question.
+        # The latents were generated normally (they saw the question), so this
+        # tests whether the latent states compress enough info for decoding.
+        if self.latent_only_decode and had_latents:
+            # start_latent_pos is one before first <latent> token (the <start-latent>)
+            start_latent_pos = max(min_latent_pos - 1, 0)
+
+            # Slice: <start-latent> + latents + <end-latent>
+            latent_region = working_embeds[:, start_latent_pos:, :]
+            region_len = latent_region.shape[1]
+
+            # Fresh position ids for the latent region (starting from 0)
+            latent_position_ids = torch.arange(region_len, device=device).unsqueeze(0).expand(batch_size, -1)
+
+            # Build a fresh causal attention mask for just this region
+            # (latents still get bidirectional within-stage via custom mask)
+            latent_input_ids = input_ids[:, start_latent_pos:]
+            latent_attn_mask = create_iteration_aware_bidirectional_mask(
+                input_ids=latent_input_ids,
+                original_attention_mask=None,
+                latent_token_id=self.latent_token_id,
+                start_latent_id=self.start_latent_id,
+                end_latent_id=self.end_latent_id,
+                n_latents_per_iteration=self.n_latents,
+                device=device,
+                dtype=latent_region.dtype,
+            )
+
+            # Run the latent region from scratch — this builds a KV cache
+            # that contains ONLY <start-latent>, latent tokens, <end-latent>.
+            outputs_latent_only = self.base_causallm(
+                inputs_embeds=latent_region,
+                attention_mask=latent_attn_mask,
+                position_ids=latent_position_ids,
+                output_hidden_states=True,
+                use_cache=True,
+            )
+            past_key_values = outputs_latent_only.past_key_values
+            logits = outputs_latent_only.logits
+            cur_pos = region_len
+            self.gen_forward_cnt += 1
+
+        # --- Normal suffix processing (only when NOT latent-only) ---
+        elif had_latents and current_pos < seq_len:
             suffix_embeds = working_embeds[:, current_pos:, :]
-            
+
             outputs_suffix = self.base_causallm(
                 inputs_embeds=suffix_embeds,
                 attention_mask=custom_attention_mask[:, :, current_pos:, :],
@@ -492,12 +541,9 @@ class Pact(nn.Module):
             )
             past_key_values = outputs_suffix.past_key_values
             logits = outputs_suffix.logits
+            cur_pos = seq_len
             self.gen_forward_cnt += 1
         elif had_latents:
-            # All tokens were latents, need to get logits
-            # Run a dummy forward to get the final logits (already have KV cache)
-            # Actually the last iteration already gave us logits
-            # We need to do one more forward with the last position
             last_embed = working_embeds[:, -1:, :]
             outputs_last = self.base_causallm(
                 inputs_embeds=last_embed,
@@ -507,9 +553,9 @@ class Pact(nn.Module):
             )
             past_key_values = outputs_last.past_key_values
             logits = outputs_last.logits
+            cur_pos = seq_len
             self.gen_forward_cnt += 1
         else:
-            # No latents, just run the full sequence
             outputs = self.base_causallm(
                 inputs_embeds=working_embeds,
                 position_ids=position_ids,
@@ -518,30 +564,28 @@ class Pact(nn.Module):
             )
             past_key_values = outputs.past_key_values
             logits = outputs.logits
+            cur_pos = seq_len
             self.gen_forward_cnt += 1
-        
+
         # Get first new token (vectorized across batch)
         next_tokens = torch.argmax(logits[:, -1, :], dim=-1)  # [batch]
-        
+
         # Initialize generated tokens list
         generated_tokens = [input_ids]
         generated_tokens.append(next_tokens.unsqueeze(1))
-        
+
         # Track which sequences are finished
         finished = (next_tokens == self.eos_token_id)
-        
-        # Current position for position_ids
-        cur_pos = seq_len
-        
+
         # Autoregressive generation
         for step in range(max_new_tokens - 1):
             if finished.all():
                 break
-            
+
             # Get embeddings for new tokens
             new_token_embeds = self.embedding(next_tokens).unsqueeze(1)  # [batch, 1, hidden]
             new_position_ids = torch.full((batch_size, 1), cur_pos, device=device, dtype=torch.long)
-            
+
             # Forward pass with KV cache
             outputs = self.base_causallm(
                 inputs_embeds=new_token_embeds,
@@ -550,19 +594,19 @@ class Pact(nn.Module):
                 use_cache=True
             )
             self.gen_forward_cnt += 1
-            
+
             past_key_values = outputs.past_key_values
             logits = outputs.logits
-            
+
             # Get next tokens
             next_tokens = torch.argmax(logits[:, -1, :], dim=-1)  # [batch]
-            
+
             # For finished sequences, replace with pad token (or keep eos)
             next_tokens = torch.where(finished, torch.full_like(next_tokens, self.eos_token_id), next_tokens)
-            
+
             # Update finished mask
             finished = finished | (next_tokens == self.eos_token_id)
-            
+
             # Append to generated tokens
             generated_tokens.append(next_tokens.unsqueeze(1))
             cur_pos += 1

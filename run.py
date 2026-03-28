@@ -63,6 +63,10 @@ def main():
 
     configs = Config(config_dict)
     set_seed(configs.seed)
+
+    if rank == 0 and getattr(configs, "latent_only_decode", False):
+        print("=== LATENT-ONLY DECODE: answer tokens can only attend to latent states ===")
+
     save_dir = os.path.join(configs.save_path, configs.name)
 
     if not os.path.exists(save_dir) and rank == 0:
@@ -213,6 +217,7 @@ def main():
             projection_rank=getattr(configs, "projection_rank", 128),
             num_attention_heads=getattr(configs, "codebook_heads", 4),
             num_context_tokens=getattr(configs, "num_context_tokens", 1),
+            latent_only_decode=getattr(configs, "latent_only_decode", False),
         )
         
         # Ensure Codebook (queries) and Cross Attention are trainable
@@ -520,6 +525,10 @@ def main():
                 torch.tensor(0, device=rank),
             )
 
+            # Collect outputs for saving to file
+            save_outputs = getattr(configs, "save_eval_outputs", False)
+            eval_records = []
+
             with torch.no_grad():
                 parallel_model.module.eval()
                 for idx, batch in enumerate(valid_gen_dataloader):
@@ -564,6 +573,17 @@ def main():
                     cor += answer_output == answer
                     cor_cot += cot_output == answer_cot
 
+                    if save_outputs:
+                        eval_records.append({
+                            "idx": test_idx.cpu().item(),
+                            "question": question,
+                            "gt_answer": answer,
+                            "predicted_answer": answer_output,
+                            "correct": answer_output == answer,
+                            "full_output": text_output,
+                            "raw_output": tokenizer.decode(outputs[0]),
+                        })
+
                     pbar.update(1)
                     pbar.set_description(
                         f"Test accuracy: {round(float(cor.detach().float() / total.detach().float()), 2)}"
@@ -571,6 +591,19 @@ def main():
 
             pbar.close()
             print(f"Device {rank}: Cor={cor}, CoT={cor_cot}, Total={total}")
+
+            # Save outputs to file (each rank saves its own shard)
+            if save_outputs and eval_records:
+                output_path = getattr(configs, "eval_output_path", None)
+                if output_path is None:
+                    output_path = os.path.join(save_dir, f"eval_outputs_rank{rank}_epoch{epoch+1}.json")
+                else:
+                    # Append rank to avoid overwrites in multi-GPU
+                    base, ext = os.path.splitext(output_path)
+                    output_path = f"{base}_rank{rank}{ext}"
+                with open(output_path, "w") as f:
+                    json.dump(eval_records, f, indent=2)
+                print(f"Rank {rank}: Saved {len(eval_records)} eval outputs to {output_path}")
 
             dist.all_reduce(cor_cot, op=dist.ReduceOp.SUM)
             dist.all_reduce(cor, op=dist.ReduceOp.SUM)
