@@ -105,6 +105,8 @@ class Pact(nn.Module):
         projection_rank=128,
         num_attention_heads=4,
         num_context_tokens=1,
+        perturbation_mode="none",
+        perturbation_noise_sigma=0.0,
     ):
 
         super(Pact, self).__init__()
@@ -116,7 +118,22 @@ class Pact(nn.Module):
         self.end_latent_id = end_latent_id
         self.n_latents = n_latents  # c_thought: latents per iteration
         self.num_context_tokens = num_context_tokens
-        
+
+        # Perturbation settings (inference-time only)
+        # Modes: "none", "noise", "zero", "random", "swap"
+        #   none  - standard PaCT (no perturbation)
+        #   noise - add Gaussian noise N(0, sigma^2 * I) to generated latents
+        #   zero  - replace all generated latents with zeros
+        #   random - replace generated latents with random vectors (same norm distribution)
+        #   swap  - shift latents: use previous example's latents for current example
+        self.perturbation_mode = perturbation_mode
+        self.perturbation_noise_sigma = perturbation_noise_sigma
+        # Swap mode state:
+        #   _swap_buffer: list of per-iteration latent tensors from the PREVIOUS example
+        #   _swap_current_latents: accumulates latents for the CURRENT example during generate()
+        self._swap_buffer = None
+        self._swap_current_latents = None
+
         assert self.num_context_tokens >= 0, "num_context_tokens must be greater than 0"
         # Tested with GPT2 and Llama3
         if isinstance(self.base_causallm, GPT2LMHeadModel):
@@ -127,7 +144,7 @@ class Pact(nn.Module):
             hidden_size = self.base_causallm.config.hidden_size
 
         self.hidden_size = hidden_size
-        
+
         # Codebook: n_latents queries that cross-attend to the seed state
         self.latent_queries = nn.Parameter(torch.randn(n_latents, hidden_size))
         self.cross_attn = nn.MultiheadAttention(
@@ -135,11 +152,50 @@ class Pact(nn.Module):
             num_heads=num_attention_heads,
             batch_first=True
         )
-        
+
         # Initialize latent queries
         nn.init.normal_(self.latent_queries, mean=0.0, std=0.02)
         nn.init.zeros_(self.cross_attn.out_proj.weight)
         nn.init.zeros_(self.cross_attn.out_proj.bias)
+
+    def _perturb_latents(self, gen_latents):
+        """
+        Apply perturbation to generated latent embeddings at inference time.
+
+        Args:
+            gen_latents: [batch, n_latents, hidden_size] generated latent embeddings
+
+        Returns:
+            Perturbed latent embeddings of the same shape.
+        """
+        if self.perturbation_mode == "none":
+            return gen_latents
+
+        if self.perturbation_mode == "noise":
+            noise = torch.randn_like(gen_latents) * self.perturbation_noise_sigma
+            return gen_latents + noise
+
+        if self.perturbation_mode == "zero":
+            return torch.zeros_like(gen_latents)
+
+        if self.perturbation_mode == "random":
+            # Replace with random vectors matching the empirical norm of real latents
+            random_latents = torch.randn_like(gen_latents)
+            # Scale to match the per-vector norm of the original latents
+            orig_norms = gen_latents.norm(dim=-1, keepdim=True).clamp(min=1e-8)
+            rand_norms = random_latents.norm(dim=-1, keepdim=True).clamp(min=1e-8)
+            return random_latents * (orig_norms / rand_norms)
+
+        if self.perturbation_mode == "swap":
+            # Swap is handled at the whole-sequence level, not per-iteration.
+            # _perturb_latents just records each iteration's latents into
+            # _swap_current_latents; the actual swap happens in generate()
+            # via _apply_swap_buffer().  Return unchanged here.
+            if self._swap_current_latents is not None:
+                self._swap_current_latents.append(gen_latents.detach().clone())
+            return gen_latents
+
+        return gen_latents
 
     def _get_latent_info(self, input_ids):
         """
@@ -255,12 +311,16 @@ class Pact(nn.Module):
             # Generate n_latents latent embeddings using codebook cross-attention
             # Query: codebook [n_latents, hidden] -> [batch, n_latents, hidden]
             queries = self.latent_queries.unsqueeze(0).expand(batch_size, -1, -1)
-            
+
             # Key/Value: last hidden state [batch, 1, hidden]
             gen_latents, _ = self.cross_attn(queries, last_hidden, last_hidden)
             gen_latents  = gen_latents + residual_information
             # gen_latents: [batch, n_latents, hidden]
-            
+
+            # Apply perturbation if configured (inference-time analysis)
+            if not self.training:
+                gen_latents = self._perturb_latents(gen_latents)
+
             # Inject generated latents into working_embeds at correct positions
             # Only inject where there are actual latent placeholders
             for j in range(self.n_latents):
@@ -397,43 +457,70 @@ class Pact(nn.Module):
         residual_information = outputs_pre.hidden_states[-1][:,-1: , :]
         current_pos = min_latent_pos
         
+        # For swap mode: accumulate this example's real latents so we can
+        # give them to the NEXT example, while injecting the PREVIOUS
+        # example's latents into this one.
+        use_swap = (self.perturbation_mode == "swap")
+        if use_swap:
+            self._swap_current_latents = []
+
         # Iteratively generate latents
         for iteration in range(num_iterations):
             iter_start_idx = iteration * self.n_latents
             active_mask = latent_counts > iter_start_idx
-            
+
             if not active_mask.any():
                 break
-            
+
             # Generate latents using codebook
             queries = self.latent_queries.unsqueeze(0).expand(batch_size, -1, -1)
             gen_latents, _ = self.cross_attn(queries, last_hidden, last_hidden)
             gen_latents  = gen_latents + residual_information
+
+            # For swap: save this example's real latents, then replace with
+            # the previous example's latents for injection.
+            if use_swap:
+                self._swap_current_latents.append(gen_latents.detach().clone())
+                if (self._swap_buffer is not None
+                        and iteration < len(self._swap_buffer)):
+                    swapped = self._swap_buffer[iteration]
+                    if swapped.shape == gen_latents.shape:
+                        gen_latents = swapped
+                    else:
+                        b, n, h = gen_latents.shape
+                        sb, sn, _ = swapped.shape
+                        out = torch.zeros_like(gen_latents)
+                        out[:min(b,sb), :min(n,sn), :] = swapped[:min(b,sb), :min(n,sn), :]
+                        gen_latents = out
+            else:
+                # Apply non-swap perturbation if configured
+                gen_latents = self._perturb_latents(gen_latents)
+
             # Inject latents
             for j in range(self.n_latents):
                 global_latent_idx = iter_start_idx + j
                 target_pos = min_latent_pos + global_latent_idx
-                
+
                 if target_pos >= seq_len:
                     break
-                
+
                 inject_mask = latent_mask[:, target_pos]
                 if inject_mask.any():
                     working_embeds[inject_mask, target_pos, :] = gen_latents[inject_mask, j, :]
-            
+
             # Process this chunk
             iter_end_idx = min((iteration + 1) * self.n_latents, max_latent_count)
             chunk_start = current_pos
             chunk_end = min_latent_pos + iter_end_idx
-            
+
             if chunk_end > seq_len:
                 chunk_end = seq_len
-            
+
             if chunk_start >= chunk_end:
                 break
-            
+
             chunk_embeds = working_embeds[:, chunk_start:chunk_end, :]
-            
+
             outputs_iter = self.base_causallm(
                 inputs_embeds=chunk_embeds,
                 attention_mask=custom_attention_mask[:, :, chunk_start:chunk_end, :chunk_end],
@@ -442,12 +529,18 @@ class Pact(nn.Module):
                 output_hidden_states=True,
                 use_cache=True
             )
-            
+
             past_key_values = outputs_iter.past_key_values
             last_hidden = outputs_iter.hidden_states[-1][:, -self.num_context_tokens:, :]
             current_pos = chunk_end
             self.gen_forward_cnt += 1
-        
+
+        # For swap: rotate buffers — this example's real latents become the
+        # buffer for the next example.
+        if use_swap:
+            self._swap_buffer = self._swap_current_latents
+            self._swap_current_latents = None
+
         return working_embeds, past_key_values, current_pos, custom_attention_mask, True
 
     def generate(

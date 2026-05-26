@@ -1,0 +1,108 @@
+\begin{thebibliography}{20}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Amalric \& Dehaene(2019)Amalric and Dehaene]{amalric2019distinct}
+Amalric, M. and Dehaene, S.
+\newblock A distinct cortical network for mathematical knowledge in the human brain.
+\newblock \emph{NeuroImage}, 189:\penalty0 19--31, 2019.
+
+\bibitem[Fedorenko et~al.(2011)Fedorenko, Behr, and Kanwisher]{fedorenko2011functional}
+Fedorenko, E., Behr, M.~K., and Kanwisher, N.
+\newblock Functional specificity for high-level linguistic processing in the human brain.
+\newblock \emph{Proceedings of the National Academy of Sciences}, 108\penalty0 (39):\penalty0 16428--16433, 2011.
+
+\bibitem[Fedorenko et~al.(2024)Fedorenko, Piantadosi, and Gibson]{fedorenko2024language}
+Fedorenko, E., Piantadosi, S.~T., and Gibson, E.~A.
+\newblock Language is primarily a tool for communication rather than thought.
+\newblock \emph{Nature}, 630\penalty0 (8017):\penalty0 575--586, 2024.
+
+\bibitem[Hao et~al.(2024)Hao, Sukhbaatar, Su, Li, Hu, Weston, and Tian]{hao2024training}
+Hao, S., Sukhbaatar, S., Su, D., Li, X., Hu, Z., Weston, J., and Tian, Y.
+\newblock Training large language models to reason in a continuous latent space.
+\newblock \emph{arXiv preprint arXiv:2412.06769}, 2024.
+
+\bibitem[Khot et~al.(2022)Khot, Trivedi, Finlayson, Fu, Richardson, Clark, and Sabharwal]{khot2022decomposed}
+Khot, T., Trivedi, H., Finlayson, M., Fu, Y., Richardson, K., Clark, P., and Sabharwal, A.
+\newblock Decomposed prompting: A modular approach for solving complex tasks.
+\newblock \emph{arXiv preprint arXiv:2210.02406}, 2022.
+
+\bibitem[Monti et~al.(2007)Monti, Osherson, Martinez, and Parsons]{monti2007functional}
+Monti, M.~M., Osherson, D.~N., Martinez, M.~J., and Parsons, L.~M.
+\newblock Functional neuroanatomy of deductive inference: a language-independent distributed network.
+\newblock \emph{Neuroimage}, 37\penalty0 (3):\penalty0 1005--1016, 2007.
+
+\bibitem[Monti et~al.(2009)Monti, Parsons, and Osherson]{monti2009boundaries}
+Monti, M.~M., Parsons, L.~M., and Osherson, D.~N.
+\newblock The boundaries of language and thought in deductive inference.
+\newblock \emph{Proceedings of the National Academy of Sciences}, 106\penalty0 (30):\penalty0 12554--12559, 2009.
+
+\bibitem[Monti et~al.(2012)Monti, Parsons, and Osherson]{monti2012thought}
+Monti, M.~M., Parsons, L.~M., and Osherson, D.~N.
+\newblock Thought beyond language: neural dissociation of algebra and natural language.
+\newblock \emph{Psychological science}, 23\penalty0 (8):\penalty0 914--922, 2012.
+
+\bibitem[Press et~al.(2021)Press, Smith, and Lewis]{press2021train}
+Press, O., Smith, N.~A., and Lewis, M.
+\newblock Train short, test long: Attention with linear biases enables input length extrapolation.
+\newblock \emph{arXiv preprint arXiv:2108.12409}, 2021.
+
+\bibitem[Saparov \& He(2022)Saparov and He]{saparov2022language}
+Saparov, A. and He, H.
+\newblock Language models are greedy reasoners: A systematic formal analysis of chain-of-thought.
+\newblock \emph{arXiv preprint arXiv:2210.01240}, 2022.
+
+\bibitem[Shen et~al.(2025)Shen, Yan, Zhang, Hu, Du, and He]{shen2025codi}
+Shen, Z., Yan, H., Zhang, L., Hu, Z., Du, Y., and He, Y.
+\newblock Codi: Compressing chain-of-thought into continuous space via self-distillation.
+\newblock \emph{arXiv preprint arXiv:2502.21074}, 2025.
+
+\bibitem[Su et~al.(2025)Su, Zhu, Xu, Jiao, Tian, and Zheng]{su2025token}
+Su, D., Zhu, H., Xu, Y., Jiao, J., Tian, Y., and Zheng, Q.
+\newblock Token assorted: Mixing latent and text tokens for improved language model reasoning.
+\newblock \emph{arXiv preprint arXiv:2502.03275}, 2025.
+
+\bibitem[Tan et~al.(2025)Tan, Li, Ju, Luo, Luan, and Song]{tan2025think}
+Tan, W., Li, J., Ju, J., Luo, Z., Luan, J., and Song, R.
+\newblock Think silently, think fast: Dynamic latent compression of llm reasoning chains.
+\newblock \emph{arXiv preprint arXiv:2505.16552}, 2025.
+
+\bibitem[Wei et~al.(2022)Wei, Wang, Schuurmans, Bosma, Xia, Chi, Le, Zhou, et~al.]{wei2022chain}
+Wei, J., Wang, X., Schuurmans, D., Bosma, M., Xia, F., Chi, E., Le, Q.~V., Zhou, D., et~al.
+\newblock Chain-of-thought prompting elicits reasoning in large language models.
+\newblock \emph{Advances in neural information processing systems}, 35:\penalty0 24824--24837, 2022.
+
+\bibitem[Xie et~al.(2023)Xie, Kawaguchi, Zhao, Zhao, Kan, He, and Xie]{xie2023self}
+Xie, Y., Kawaguchi, K., Zhao, Y., Zhao, J.~X., Kan, M.-Y., He, J., and Xie, M.
+\newblock Self-evaluation guided beam search for reasoning.
+\newblock \emph{Advances in Neural Information Processing Systems}, 36:\penalty0 41618--41650, 2023.
+
+\bibitem[Yao et~al.(2023)Yao, Yu, Zhao, Shafran, Griffiths, Cao, and Narasimhan]{yao2023tree}
+Yao, S., Yu, D., Zhao, J., Shafran, I., Griffiths, T., Cao, Y., and Narasimhan, K.
+\newblock Tree of thoughts: Deliberate problem solving with large language models.
+\newblock \emph{Advances in neural information processing systems}, 36:\penalty0 11809--11822, 2023.
+
+\bibitem[Zelikman et~al.(2024)Zelikman, Harik, Shao, Jayasiri, Haber, and Goodman]{zelikman2024quiet}
+Zelikman, E., Harik, G., Shao, Y., Jayasiri, V., Haber, N., and Goodman, N.~D.
+\newblock Quiet-star: Language models can teach themselves to think before speaking.
+\newblock \emph{arXiv preprint arXiv:2403.09629}, 2024.
+
+\bibitem[Zhang et~al.(2025)Zhang, Hu, Zhang, Zhang, and Wan]{zhang2025icr}
+Zhang, Z., Hu, X., Zhang, H., Zhang, J., and Wan, X.
+\newblock Icr probe: Tracking hidden state dynamics for reliable hallucination detection in llms.
+\newblock In \emph{Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)}, pp.\  17986--18002, 2025.
+
+\bibitem[Zhou et~al.(2022)Zhou, Sch{\"a}rli, Hou, Wei, Scales, Wang, Schuurmans, Cui, Bousquet, Le, et~al.]{zhou2022least}
+Zhou, D., Sch{\"a}rli, N., Hou, L., Wei, J., Scales, N., Wang, X., Schuurmans, D., Cui, C., Bousquet, O., Le, Q., et~al.
+\newblock Least-to-most prompting enables complex reasoning in large language models.
+\newblock \emph{arXiv preprint arXiv:2205.10625}, 2022.
+
+\bibitem[Zhu et~al.(2025)Zhu, Hao, Hu, Jiao, Russell, and Tian]{zhu2025reasoning}
+Zhu, H., Hao, S., Hu, Z., Jiao, J., Russell, S., and Tian, Y.
+\newblock Reasoning by superposition: A theoretical perspective on chain of continuous thought.
+\newblock \emph{arXiv preprint arXiv:2505.12514}, 2025.
+
+\end{thebibliography}

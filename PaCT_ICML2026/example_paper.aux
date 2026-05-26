@@ -1,0 +1,140 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyperFirstAtBeginDocument{\AtBeginDocument}
+\HyperFirstAtBeginDocument{\ifx\hyper@anchor\@undefined
+\global\let\oldnewlabel\newlabel
+\gdef\newlabel#1#2{\newlabelxx{#1}#2}
+\gdef\newlabelxx#1#2#3#4#5#6{\oldnewlabel{#1}{{#2}{#3}}}
+\AtEndDocument{\ifx\hyper@anchor\@undefined
+\let\newlabel\oldnewlabel
+\fi}
+\fi}
+\global\let\hyper@last\relax 
+\gdef\HyperFirstAtBeginDocument#1{#1}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\newlabel{fig:teaser}{{}{1}{}{Doc-Start}{}}
+\newlabel{fig:teaser@cref}{{}{[1][1][]1}}
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:concept_diagram_intro}{{1}{1}{\textbf {PaCT vs.\ Coconut: training speed comparison.}\relax }{figure.caption.1}{}}
+\newlabel{fig:concept_diagram_intro@cref}{{[figure][1][]1}{[1][1][]1}}
+\citation{wei2022chain}
+\citation{fedorenko2024language,amalric2019distinct,monti2007functional,monti2009boundaries,monti2012thought,fedorenko2011functional}
+\citation{saparov2022language}
+\citation{khot2022decomposed}
+\citation{zhou2022least}
+\citation{xie2023self}
+\citation{yao2023tree}
+\citation{zelikman2024quiet}
+\citation{hao2024training}
+\citation{zhu2025reasoning}
+\citation{hao2024training}
+\citation{tan2025think}
+\citation{shen2025codi}
+\citation{su2025token}
+\citation{hao2024training}
+\citation{hao2024training}
+\newlabel{sec:method}{{2}{3}{}{section.2}{}}
+\newlabel{sec:method@cref}{{[section][2][]2}{[1][3][]3}}
+\newlabel{sec:objective}{{2.1}{3}{}{subsection.2.1}{}}
+\newlabel{sec:objective@cref}{{[subsection][1][2]2.1}{[1][3][]3}}
+\newlabel{sec:prelims}{{2.2}{3}{}{subsection.2.2}{}}
+\newlabel{sec:prelims@cref}{{[subsection][2][2]2.2}{[1][3][]3}}
+\newlabel{sec:pact}{{2.3}{3}{}{subsection.2.3}{}}
+\newlabel{sec:pact@cref}{{[subsection][3][2]2.3}{[1][3][]3}}
+\newlabel{fig:pact_overview}{{2}{4}{\textbf {Parallel Continuous Thought (PaCT).} At each reasoning stage, a set of latent reasoning states is synthesized in parallel from the current textual context, refined through bidirectional interaction, and used to condition subsequent autoregressive decoding.\relax }{figure.caption.2}{}}
+\newlabel{fig:pact_overview@cref}{{[figure][2][]2}{[1][3][]4}}
+\newlabel{sec:codebook}{{2.3.1}{4}{}{subsubsection.2.3.1}{}}
+\newlabel{sec:codebook@cref}{{[subsubsection][1][2,3]2.3.1}{[1][4][]4}}
+\newlabel{sec:latent_synthesis}{{2.3.2}{4}{}{subsubsection.2.3.2}{}}
+\newlabel{sec:latent_synthesis@cref}{{[subsubsection][2][2,3]2.3.2}{[1][4][]4}}
+\newlabel{sec:latent_refinement}{{2.3.3}{4}{}{subsubsection.2.3.3}{}}
+\newlabel{sec:latent_refinement@cref}{{[subsubsection][3][2,3]2.3.3}{[1][4][]4}}
+\newlabel{fig:latent_attention}{{3}{4}{Bidirectional interaction among latent reasoning states within a single stage, while preserving causal text decoding.\relax }{figure.caption.3}{}}
+\newlabel{fig:latent_attention@cref}{{[figure][3][]3}{[1][4][]4}}
+\citation{hao2024training}
+\citation{hao2024training}
+\newlabel{sec:conditioning}{{2.3.4}{5}{}{subsubsection.2.3.4}{}}
+\newlabel{sec:conditioning@cref}{{[subsubsection][4][2,3]2.3.4}{[1][4][]5}}
+\newlabel{sec:stages}{{2.3.5}{5}{}{subsubsection.2.3.5}{}}
+\newlabel{sec:stages@cref}{{[subsubsection][5][2,3]2.3.5}{[1][5][]5}}
+\newlabel{sec:training}{{2.4}{5}{}{subsection.2.4}{}}
+\newlabel{sec:training@cref}{{[subsection][4][2]2.4}{[1][5][]5}}
+\newlabel{sec:complexity}{{2.5}{5}{}{subsection.2.5}{}}
+\newlabel{sec:complexity@cref}{{[subsection][5][2]2.5}{[1][5][]5}}
+\newlabel{sec:results}{{3}{5}{}{section.3}{}}
+\newlabel{sec:results@cref}{{[section][3][]3}{[1][5][]5}}
+\newlabel{sec:experimental_setup}{{3.1}{5}{}{subsection.3.1}{}}
+\newlabel{sec:experimental_setup@cref}{{[subsection][1][3]3.1}{[1][5][]5}}
+\newlabel{sec:efficiency}{{3.2}{6}{}{subsection.3.2}{}}
+\newlabel{sec:efficiency@cref}{{[subsection][2][3]3.2}{[1][6][]6}}
+\newlabel{sec:scaling}{{3.3}{6}{}{subsection.3.3}{}}
+\newlabel{sec:scaling@cref}{{[subsection][3][3]3.3}{[1][6][]6}}
+\newlabel{sec:stage_ablation}{{3.4}{6}{}{subsection.3.4}{}}
+\newlabel{sec:stage_ablation@cref}{{[subsection][4][3]3.4}{[1][6][]6}}
+\newlabel{fig:latent_requirement_ablation}{{4}{6}{\textbf {Impact of latent stage ablation on answer confidence.} We measure the mean log-probability of ground-truth answers on GSM8k while progressively removing latent stages via zeroing, placeholder replacement, or truncation. The observed monotonic increase in probability as more stages are retained demonstrates that PaCT utilizes each computational stage to actively refine its final prediction.\relax }{figure.caption.6}{}}
+\newlabel{fig:latent_requirement_ablation@cref}{{[figure][4][]4}{[1][6][]6}}
+\newlabel{sec:latent_content}{{3.5}{6}{}{subsection.3.5}{}}
+\newlabel{sec:latent_content@cref}{{[subsection][5][3]3.5}{[1][6][]6}}
+\newlabel{tab:main_results}{{1}{7}{\textbf {Accuracy and training efficiency across reasoning methods.} Results are reported on GSM8k, ProntoQA, and ProsQA. PaCT matches or exceeds Coconut across all benchmarks while substantially reducing training time. Results for Coconut, CoLaR, and CODI are obtained by rerunning their released implementations under our experimental setup. *CODI's training was not stable on ProsQA, hence results have been ommitted.\relax }{table.caption.4}{}}
+\newlabel{tab:main_results@cref}{{[table][1][]1}{[1][6][]7}}
+\newlabel{tab:performance_training}{{2}{7}{\textbf {Scaling with model size.} Accuracy and training time across larger base models on GSM8k. Training time in hrs.\relax }{table.caption.5}{}}
+\newlabel{tab:performance_training@cref}{{[table][2][]2}{[1][6][]7}}
+\newlabel{tab:latent_similarity}{{3}{7}{\textbf {Latent similarity diagnostics.} PaCT exhibits high within-stage similarity but low cross-stage similarity, while Coconut exhibits the opposite trend.\relax }{table.caption.7}{}}
+\newlabel{tab:latent_similarity@cref}{{[table][3][]3}{[1][6][]7}}
+\newlabel{sec:latent_decoding}{{3.6}{7}{}{subsection.3.6}{}}
+\newlabel{sec:latent_decoding@cref}{{[subsection][6][3]3.6}{[1][7][]7}}
+\newlabel{fig:accuracy_and_latent_stages}{{5}{7}{\textbf {Accuracy vs.\ number of stages.} Increasing the number of latent stages improves accuracy across benchmarks.\relax }{figure.caption.8}{}}
+\newlabel{fig:accuracy_and_latent_stages@cref}{{[figure][5][]5}{[1][6][]7}}
+\newlabel{tab:width_depth_budget}{{4}{7}{\textbf {Width--depth allocation under a fixed latent budget.} Holding the total number of latent reasoning states constant at $L \cdot S = 6$ on GSM8k, we vary how the budget is split between within-stage width $L$ and reasoning depth $S$. A balanced allocation that favours depth ($L{=}2$, $S{=}3$) is best; both pure width ($S{=}1$) and pure depth ($L{=}1$) underperform.\relax }{table.caption.9}{}}
+\newlabel{tab:width_depth_budget@cref}{{[table][4][]4}{[1][6][]7}}
+\citation{zhang2025icr}
+\citation{press2021train}
+\newlabel{tab:latent_confidence}{{5}{8}{\textbf {Final-latent confidence for correct vs.\ incorrect predictions.} Top-1 probability at the final latent position.\relax }{table.caption.10}{}}
+\newlabel{tab:latent_confidence@cref}{{[table][5][]5}{[1][7][]8}}
+\newlabel{fig:latent_examples}{{6}{8}{\textbf {Representative decoded latent trajectories.} Within-stage latent pairs often decode to identical tokens, consistent with high within-stage similarity in Table~\ref {tab:latent_similarity}. Additional examples are provided in Appendix~ \ref {app:latent_decoding_examples}.\relax }{figure.caption.11}{}}
+\newlabel{fig:latent_examples@cref}{{[figure][6][]6}{[1][7][]8}}
+\newlabel{sec:icr_analysis}{{3.7}{8}{}{subsection.3.7}{}}
+\newlabel{sec:icr_analysis@cref}{{[subsection][7][3]3.7}{[1][8][]8}}
+\newlabel{subsec:context_length}{{3.8}{8}{}{subsection.3.8}{}}
+\newlabel{subsec:context_length@cref}{{[subsection][8][3]3.8}{[1][8][]8}}
+\newlabel{fig:icr}{{7}{8}{\textbf {Layer-wise difference in ICR scores between PaCT and Coconut.} Negative values indicate lower ICR for PaCT.\relax }{figure.caption.12}{}}
+\newlabel{fig:icr@cref}{{[figure][7][]7}{[1][8][]8}}
+\newlabel{tab:gpt2_gsm8k_context}{{6}{8}{Effect of number of context tokens on PaCT (GPT-2) performance on GSM8k.\relax }{table.caption.13}{}}
+\newlabel{tab:gpt2_gsm8k_context@cref}{{[table][6][]6}{[1][8][]8}}
+\newlabel{sec:perturbation_analysis}{{3.9}{8}{}{subsection.3.9}{}}
+\newlabel{sec:perturbation_analysis@cref}{{[subsection][9][3]3.9}{[1][8][]8}}
+\citation{hao2024training}
+\newlabel{fig:attention_heatmap}{{8}{9}{\textbf {Cross-attention weight distribution across different number of context tokens.} Position 0 denotes the \textbf {last} token before latent synthesis, position 1 the \textbf {second-to-last}, and so on. The model concentrates attention on the most recent 1--2 positions regardless of available context.\relax }{figure.caption.14}{}}
+\newlabel{fig:attention_heatmap@cref}{{[figure][8][]8}{[1][8][]9}}
+\newlabel{tab:latent_perturbation}{{7}{9}{\textbf {Perturbing PaCT's latent reasoning states on GSM8k.} Destructive interventions (zeroing, random-norm replacement, cross-example swap) collapse accuracy, while structure-preserving Gaussian noise is largely absorbed. Restricting answer decoding to attend only to latent states (no-prompt decode) also collapses accuracy, indicating that the latents encode information not redundantly present in the prompt.\relax }{table.caption.15}{}}
+\newlabel{tab:latent_perturbation@cref}{{[table][7][]7}{[1][9][]9}}
+\newlabel{tab:ood_transfer}{{8}{9}{\textbf {Out-of-distribution generalization.} All models are trained on GSM8k and evaluated zero-shot on three held-out math benchmarks. PaCT matches or exceeds Coconut on every split.\relax }{table.caption.16}{}}
+\newlabel{tab:ood_transfer@cref}{{[table][8][]8}{[1][9][]9}}
+\newlabel{sec:ood_transfer}{{3.10}{9}{}{subsection.3.10}{}}
+\newlabel{sec:ood_transfer@cref}{{[subsection][10][3]3.10}{[1][9][]9}}
+\bibdata{example_paper}
+\bibcite{amalric2019distinct}{{1}{2019}{{Amalric \& Dehaene}}{{Amalric and Dehaene}}}
+\bibcite{fedorenko2011functional}{{2}{2011}{{Fedorenko et~al.}}{{Fedorenko, Behr, and Kanwisher}}}
+\bibcite{fedorenko2024language}{{3}{2024}{{Fedorenko et~al.}}{{Fedorenko, Piantadosi, and Gibson}}}
+\bibcite{hao2024training}{{4}{2024}{{Hao et~al.}}{{Hao, Sukhbaatar, Su, Li, Hu, Weston, and Tian}}}
+\bibcite{khot2022decomposed}{{5}{2022}{{Khot et~al.}}{{Khot, Trivedi, Finlayson, Fu, Richardson, Clark, and Sabharwal}}}
+\bibcite{monti2007functional}{{6}{2007}{{Monti et~al.}}{{Monti, Osherson, Martinez, and Parsons}}}
+\bibcite{monti2009boundaries}{{7}{2009}{{Monti et~al.}}{{Monti, Parsons, and Osherson}}}
+\bibcite{monti2012thought}{{8}{2012}{{Monti et~al.}}{{Monti, Parsons, and Osherson}}}
+\bibcite{press2021train}{{9}{2021}{{Press et~al.}}{{Press, Smith, and Lewis}}}
+\bibcite{saparov2022language}{{10}{2022}{{Saparov \& He}}{{Saparov and He}}}
+\bibcite{shen2025codi}{{11}{2025}{{Shen et~al.}}{{Shen, Yan, Zhang, Hu, Du, and He}}}
+\bibcite{su2025token}{{12}{2025}{{Su et~al.}}{{Su, Zhu, Xu, Jiao, Tian, and Zheng}}}
+\newlabel{sec:conclusion}{{5}{10}{}{section.5}{}}
+\newlabel{sec:conclusion@cref}{{[section][5][]5}{[1][10][]10}}
+\bibcite{tan2025think}{{13}{2025}{{Tan et~al.}}{{Tan, Li, Ju, Luo, Luan, and Song}}}
+\bibcite{wei2022chain}{{14}{2022}{{Wei et~al.}}{{Wei, Wang, Schuurmans, Bosma, Xia, Chi, Le, Zhou, et~al.}}}
+\bibcite{xie2023self}{{15}{2023}{{Xie et~al.}}{{Xie, Kawaguchi, Zhao, Zhao, Kan, He, and Xie}}}
+\bibcite{yao2023tree}{{16}{2023}{{Yao et~al.}}{{Yao, Yu, Zhao, Shafran, Griffiths, Cao, and Narasimhan}}}
+\bibcite{zelikman2024quiet}{{17}{2024}{{Zelikman et~al.}}{{Zelikman, Harik, Shao, Jayasiri, Haber, and Goodman}}}
+\bibcite{zhang2025icr}{{18}{2025}{{Zhang et~al.}}{{Zhang, Hu, Zhang, Zhang, and Wan}}}
+\bibcite{zhou2022least}{{19}{2022}{{Zhou et~al.}}{{Zhou, Sch{\"a}rli, Hou, Wei, Scales, Wang, Schuurmans, Cui, Bousquet, Le, et~al.}}}
+\bibcite{zhu2025reasoning}{{20}{2025}{{Zhu et~al.}}{{Zhu, Hao, Hu, Jiao, Russell, and Tian}}}
+\bibstyle{icml2026}
+\@input{sections/appendix.aux}

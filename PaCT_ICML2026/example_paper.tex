@@ -1,0 +1,244 @@
+%%%%%%%% ICML 2026 EXAMPLE LATEX SUBMISSION FILE %%%%%%%%%%%%%%%%%
+
+\documentclass{article}
+
+% Recommended, but optional, packages for figures and better typesetting:
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{multirow,multicol}
+\usepackage{booktabs} % for professional tables
+\usepackage{algpseudocode}
+
+% hyperref makes hyperlinks in the resulting PDF.
+% If your build breaks (sometimes temporarily if a hyperlink spans a page)
+% please comment out the following usepackage line and replace
+% \usepackage{icml2026} with \usepackage[nohyperref]{icml2026} above.
+\usepackage{hyperref}
+
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning}
+
+% Attempt to make hyperref and algorithmic work together better:
+%\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+% Use the following line for the initial blind version submitted for review:
+\usepackage{icml2026}
+
+% For preprint, use
+% \usepackage[preprint]{icml2026}
+
+% If accepted, instead use the following line for the camera-ready submission:
+% \usepackage[accepted]{icml2026}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsthm}
+
+
+% if you use cleveref..
+\usepackage[capitalize,noabbrev]{cleveref}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THEOREMS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% Todonotes is useful during development; simply uncomment the next line
+%    and comment out the line below the next line to turn off comments
+
+%\usepackage[disable,textsize=tiny]{todonotes}
+\usepackage[textsize=tiny]{todonotes}
+
+% The \icmltitle you define below is probably too long as a header.
+% Therefore, a short form for the running title is supplied here:
+\icmltitlerunning{PaCT: Parallel Continuous Thought for Reasoning in Large Language Models}
+
+\begin{document}
+\twocolumn[
+  %\icmltitle{Thinking in Parallel: Accelerating Continuous Latent Reasoning in Large Language Models}
+  \icmltitle{PaCT: Parallel Continuous Thought for Reasoning in Large Language Models}
+
+  % It is OKAY to include author information, even for blind submissions: the
+  % style file will automatically remove it for you unless you've provided
+  % the [accepted] option to the icml2026 package.
+
+  % List of affiliations: The first argument should be a (short) identifier you
+  % will use later to specify author affiliations Academic affiliations
+  % should list Department, University, City, Region, Country Industry
+  % affiliations should list Company, City, Region, Country
+
+  % You can specify symbols, otherwise they are numbered in order. Ideally, you
+  % should not use this facility. Affiliations will be numbered in order of
+  % appearance and this is the preferred way.
+  \icmlsetsymbol{equal}{*}
+
+  \begin{icmlauthorlist}
+    \icmlauthor{Firstname1 Lastname1}{equal,yyy}
+    \icmlauthor{Firstname2 Lastname2}{equal,yyy,comp}
+    \icmlauthor{Firstname3 Lastname3}{comp}
+    \icmlauthor{Firstname4 Lastname4}{sch}
+    \icmlauthor{Firstname5 Lastname5}{yyy}
+    \icmlauthor{Firstname6 Lastname6}{sch,yyy,comp}
+    \icmlauthor{Firstname7 Lastname7}{comp}
+    %\icmlauthor{}{sch}
+    \icmlauthor{Firstname8 Lastname8}{sch}
+    \icmlauthor{Firstname8 Lastname8}{yyy,comp}
+    %\icmlauthor{}{sch}
+    %\icmlauthor{}{sch}
+  \end{icmlauthorlist}
+
+  \icmlaffiliation{yyy}{Department of XXX, University of YYY, Location, Country}
+  \icmlaffiliation{comp}{Company Name, Location, Country}
+  \icmlaffiliation{sch}{School of ZZZ, Institute of WWW, Location, Country}
+
+  \icmlcorrespondingauthor{Firstname1 Lastname1}{first1.last1@xxx.edu}
+  \icmlcorrespondingauthor{Firstname2 Lastname2}{first2.last2@www.uk}
+
+  % You may provide any keywords that you find helpful for describing your
+  % paper; these are used to populate the "keywords" metadata in the PDF but
+  % will not be shown in the document
+
+  \icmlkeywords{Machine Learning, ICML}
+
+  \vskip 0.2in
+
+  \teaser{
+    \centering
+    \includegraphics[width=1\textwidth]{imgs/compare_pact_coconut.png}
+    \caption{\textit{Figure 0: Comparison of latent token decoding between PaCT and Coconut models on the Graham crackers problem. The grid shows the top-5 token predictions at each latent step, ordered from high to low probability. PaCT uses only 3 latent steps while Coconut uses 6 latent steps yet obtains adequate decoded reasoning. PaCT’s parallelism of latent tokens, reduced count, and information richness makes our method compute efficient.}}
+    \label{fig:teaser}
+    \vspace{-2mm}
+  }
+
+]
+
+
+% this must go after the closing bracket ] following \twocolumn[ ...
+
+% This command actually creates the footnote in the first column listing the
+% affiliations and the copyright notice. The command takes one argument, which
+% is text to display at the start of the footnote. The \icmlEqualContribution
+% command is standard text for equal contribution. Remove it (just {}) if you
+% do not need this facility.
+
+% Use ONE of the following lines. DO NOT remove the command.
+% If you have no special notice, KEEP empty braces:
+%\printAffiliationsAndNotice{}  % no special notice (required even if empty)
+% Or, if applicable, use the standard equal contribution text:
+% \printAffiliationsAndNotice{\icmlEqualContribution}
+
+% \teaser{
+ 
+%  \centering
+%     \includegraphics[width=\textwidth]{imgs/compare_pact_coconut.png}
+%     \caption{Comparison of latent token decoding between PaCT and Coconut models on the Graham crackers problem. The grid shows the top-5 token predictions at each latent step, ordered from high to low probability. PaCT uses only 3 latent steps while Coconut uses 6 latent steps yet obtains adequate decoded reasoning. PaCTäs parallelism of latent tokens, reduced count, and information rich makes our method compute efficient.}
+%     \label{fig:pact_coconut_comparison}
+% \label{fig:teaser}
+% }
+
+
+
+% \begin{figure*}[t]
+%     \centering
+%     \includegraphics[width=\textwidth]{imgs/compare_pact_coconut.png}
+%     \caption{Comparison of latent token decoding between PaCT and Coconut models on the Graham crackers problem. The grid shows the top-5 token predictions at each latent step, ordered from high to low probability. PaCT uses only 3 latent steps while Coconut uses 6 latent steps yet obtains adequate decoded reasoning. PaCTäs parallelism of latent tokens, reduced count, and information rich makes our method compute efficient.}
+%     \label{fig:pact_coconut_comparison}
+% \end{figure*}
+
+\begin{abstract}
+Large language models (LLMs) typically reason in the language space, expressing intermediate computation as chains
+of thought (CoT). While effective, this ties reasoning to sequential text token generation, where many tokens primarily ensure textual coherence without directly contributing to the underlying reasoning process, and the cost of reasoning scales with the length of the generated trace. Recent works explore continuous latent reasoning by replacing portions of CoT with internal states by relying on recurrent latent unrolling, introducing long serial dependencies inside the Transformer, and limiting hardware parallelism.
+We introduce \emph{Parallel Continuous Thought} (PaCT), which eliminates recurrent unrolling by organizing latent reasoning
+into stages. At each stage, PaCT synthesizes a set of latent reasoning states \emph{in parallel} using a learnable query
+codebook and cross-attention to the current context, refines them via bidirectional interaction within the stage, and
+conditions standard causal decoding through a strictly causal interface. PaCT challenges the assumption that continuous
+latent reasoning must rely on latent state propagation, showing that reasoning depth can instead be achieved through
+repeated, context-grounded latent resynthesis.
+Empirically, PaCT trains substantially faster than recurrent latent unrolling while matching or improving reasoning performance
+across diverse settings and model scales. The analyses demonstrate that the stages contribute meaningfully to the final predictions,
+encode distinct information across stages, and stabilize the internal dynamics earlier during reasoning. Our code and model weights are available at \href{https://anonymous.4open.science/r/pact-576C/}{PaCT}.
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.65 \linewidth]{imgs/intro_diagram.png}
+  \caption{\textbf{PaCT vs.\ Coconut: training speed comparison.}}
+  \label{fig:concept_diagram_intro}
+  \vspace{-5mm}
+\end{figure}
+\end{abstract}
+
+
+
+% Chain of Continuous Thought (Coconut) enables reasoning in continuous latent space but relies on sequential latent unrolling, which limits computational efficiency. We propose Parallel Continuous Thought (PaCT), which synthesizes latent representations in parallel using a learnable codebook and cross-attention to textual context. PaCT preserves causal decoding while reducing serial computation, achieving comparable or improved reasoning performance with substantially lower training cost.
+
+% \textcolor{red}{Gautam - form novelty perspective following is the statement use it - It aligns very well with introduction, contri, conclusive remarks.}
+% \textcolor{blue}{PaCT challenges the assumption that continuous latent reasoning must rely on latent state propagation, showing that reasoning depth can instead be achieved through repeated, context-grounded latent resynthesis.}
+
+% Recent work on Chain of Continuous Thought (Coconut) has shown that large language models can reason effectively in a continuous latent space rather than through explicit language tokens, enabling emergent search behaviors during problem-solving. However, the original formulation generates latent representations sequentially—feeding hidden states back one at a time as subsequent input embeddings—creating a computational bottleneck that limits training efficiency. We introduce \textbf{Parallel Continuous Thought (PaCT)}, a reformulation that replaces sequential latent generation with parallel synthesis via a learnable codebook and cross-attention mechanism. Our approach maintains a set of learnable query vectors that attend to the preceding hidden state context, enabling the simultaneous generation of multiple latent embeddings per reasoning iteration. This architectural modification preserves the model's capacity to reason in continuous latent space while enabling bidirectional attention within each iteration. Experiments on mathematical and logical reasoning benchmarks demonstrate that our method matches or exceeds the accuracy of the original Coconut while achieving a 4-9x reduction in training time. Our results show that efficient parallel latent generation does not compromise reasoning quality, opening pathways for scaling continuous thought reasoning to larger models and more complex tasks.
+\end{abstract}
+\input{sections/introduction}
+% \include{sections/related_works}
+\input{sections/methodology}
+% \input{sections/methodology_old}
+\input{sections/results_and_discussions}
+
+\section{Limitations and Future Scope}
+
+While PaCT substantially improves the efficiency and scalability of continuous latent reasoning, it does not yet surpass language-based chain-of-thought reasoning in absolute accuracy on all tasks. Our study focuses on supervised, text-only reasoning, and extending PaCT to multimodal settings is an important direction for future work. Integrating PaCT-style latent reasoning into reinforcement learning and policy optimization frameworks such as GRPO, as well as understanding its interaction with pretraining objectives and long-horizon decision-making, may further improve the generality and robustness of latent reasoning systems also aiding in surpassing the COT upper limit otherwise more naturally present with SFT-based methods.
+
+\paragraph{Exploiting the latent submanifold.}
+Our perturbation analysis in Section~\ref{sec:perturbation_analysis} shows that PaCT's latent states are tightly concentrated on a low-dimensional, structure-preserving submanifold: additive Gaussian noise is absorbed across two orders of magnitude of $\sigma$, while norm-matched random replacements — which leave the manifold — collapse accuracy. This is a finding our perturbation experiments made visible, and it suggests an explicit modeling direction. Future methods could parameterize latent synthesis to operate directly in the learned submanifold (for instance via a low-rank or VQ-style projection, or a normalizing-flow prior over latent directions), rather than allowing the full ambient dimensionality and relying on training dynamics to discover the submanifold implicitly. Such a parameterization could improve sample efficiency, reduce redundancy across within-stage latents, and provide a more controllable interface for interpretability and intervention. This is just one direction of thought and the findings can be interpreted in multiple other ways.
+
+\paragraph{From curriculum-based training to learned latent objectives at scale.}
+The same perturbation analysis suggests a natural caveat about scaling. At the GPT-2 scale we study here, a curriculum that progressively replaces textual CoT tokens with latent reasoning stages is effective at inducing a structured latent submanifold. Prior work that has evaluated faithfulness of Coconut-style latents at much larger scales, however, has reported weaker latent-intervention effects — a pattern that we interpret not as evidence against latent reasoning per se, but as a signal that curriculum-based supervision, which effectively commits each latent to a fixed role early in training, may not be the right inductive lever for larger models with substantially more expressive latent spaces. A promising future direction is to replace the token-replacement curriculum with an explicit latent-space learning objective that (i) does not pin each latent to a single canonical role, (ii) shapes the latent submanifold directly through geometric or information-theoretic regularizers, and (iii) can be combined with the parallel stage-wise synthesis introduced in this paper. We see the submanifold structure documented here as the first concrete handle for designing such a training objective.
+
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+In this paper, we introduce Parallel Continuous Thought (PaCT), a new paradigm for continuous latent reasoning that removes the need for recurrent latent state propagation. PaCT constructs reasoning through stage-wise, parallel latent resynthesis, enabling efficient depth without incurring the serial bottlenecks of latent unrolling. Across a range of reasoning tasks and model scales, PaCT matches or improves the accuracy of prior continuous thought methods while achieving substantial gains in training and inference efficiency. Beyond performance, our analyses reveal that PaCT learns stage-specialized latent representations, exhibits more stable internal dynamics, and benefits systematically from increased reasoning depth. Together, these results challenge the assumption that effective latent reasoning must rely on propagating latent states across steps through recurrent unrolling, and suggest that repeated, context-grounded latent resynthesis offers a scalable alternative.  We hope this work motivates further exploration of non-recurrent latent reasoning architectures for building more efficient and robust reasoning systems.
+
+
+
+
+
+% We introduced \emph{Parallel Continuous Thought} (PaCT), a reformulation of continuous latent reasoning that eliminates the recurrent latent-unrolling bottleneck present in Coconut-style training. PaCT organizes latent reasoning into stages and re-synthesizes a set of latent reasoning states in parallel at each stage from the current textual context, enabling efficient hardware parallelism while preserving standard causal decoding.
+
+% Empirically, PaCT matches or exceeds Coconut across GSM8k, ProntoQA, and ProsQA while delivering substantial training-time reductions, and the same efficiency gains persist when scaling to larger base models. We further showed that PaCT’s gains are not merely computational: stage ablations reveal that each stage contributes meaningful signal to the final prediction; latent similarity diagnostics indicate that PaCT’s stages encode more distinct information than recurrent unrolling; vocabulary-space probes expose coherent intermediate-to-final progressions in correct predictions; and ICR analyses suggest that PaCT stabilizes internal dynamics earlier than Coconut. Finally, a context-length ablation supports the design choice that latent synthesis primarily benefits from the most recent hidden states.
+
+% Overall, PaCT demonstrates that continuous latent reasoning can be made substantially more scalable by removing recurrent latent dependencies, while simultaneously promoting stage-wise structure in the latent computation. This positions PaCT as a practical and extensible foundation for training-efficient latent reasoning in larger models and more complex settings.
+
+
+% In the unusual situation where you want a paper to appear in the
+% references without citing it in the main text, use \nocite
+% \nocite{langley00}
+
+\bibliography{example_paper}
+\bibliographystyle{icml2026}
+
+\include{sections/appendix}
+% This document was modified from the file originally made available by
+% Pat Langley and Andrea Danyluk for ICML-2K. This version was created
+% by Iain Murray in 2018, and modified by Alexandre Bouchard in
+% 2019 and 2021 and by Csaba Szepesvari, Gang Niu and Sivan Sabato in 2022.
+% Modified again in 2023 and 2024 by Sivan Sabato and Jonathan Scarlett.
+% Previous contributors include Dan Roy, Lise Getoor and Tobias
+% Scheffer, which was slightly modified from the 2010 version by
+% Thorsten Joachims & Johannes Fuernkranz, slightly modified from the
+% 2009 version by Kiri Wagstaff and Sam Roweis's 2008 version, which is
+% slightly modified from Prasad Tadepalli's 2007 version which is a
+% lightly changed version of the previous year's version by Andrew
+% Moore, which was in turn edited from those of Kristian Kersting and
+% Codrina Lauth. Alex Smola contributed to the algorithmic style files.
+
+
